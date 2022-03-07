@@ -37,7 +37,7 @@ class MST:
         # TODO: implement some distance between two objectives
         # ... either compute the shortest path between them, or just use the manhattan distance between the objectives
         self.distances   = {
-                (i, j): DISTANCE(i, j)
+                (i, j): calc_manhattan_distance(i, j)
                 for i, j in self.cross(objectives)
             }
 
@@ -163,7 +163,7 @@ def astar_single(maze):
     start_pos = (heuristic(start, goals), start)
     priority.put(start_pos)
 
-    while priority:
+    while priority :
         set_start = priority.get()
         
         if set_start[1] in goals:
@@ -174,12 +174,17 @@ def astar_single(maze):
         neighbors = maze.neighbors(curr[0], curr[1])
 
         for neighbor in neighbors:
-            if (neighbor not in visited) and (maze.navigable(neighbor[0], neighbor[1])):
-                parents[neighbor] = curr
-                heur = heuristic(neighbor, goals)
-                start_to_node = len(find_path(start, curr, parents))
+            parents[neighbor] = curr
+            heur = heuristic(neighbor, goals)
+            start_to_node = len(find_path(start, curr, parents))
 
-                new_node = (heur + start_to_node, neighbor)
+            if (neighbor not in visited) and (maze.navigable(neighbor[0], neighbor[1])):
+                # parents[neighbor] = curr
+                # heur = heuristic(neighbor, goals)
+                # start_to_node = len(find_path(start, curr, parents))
+
+                # trying to figure outt he order of the priority queue
+                new_node = ((heur + start_to_node), neighbor)
                 priority.put(new_node)
                 visited[neighbor] = True
 
