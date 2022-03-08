@@ -191,10 +191,6 @@ def astar_single(maze):
 
                 total_cost[neighbor] = start_to_curr[neighbor] + heuristic
 
-    
-
-
-
 def astar_multiple(maze):
     """
     Runs A star for part 3 of the assignment in the case where there are
@@ -204,7 +200,72 @@ def astar_multiple(maze):
 
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
-    return []
+    # needed lists
+    possibilities = []
+    start = maze.start
+    goals = maze.waypoints
+    path_lengths = {}
+    
+    # priority queue
+    priority = que.PriorityQueue()
+
+    for x in range(len(goals)) :
+        for y in range(x + 1, len(goals)) :
+            possibilities.append((x, y))
+
+    
+    for possible in possibilities:
+        # create a copy of the maze for each possible correct path
+        copy_of_maze = deepcopy(maze)
+        leng = astar_single(copy_of_maze)
+        length = len(leng)
+        path_lengths[possible] = length - 1
+
+    # set all tuples to None
+    tup = (start, tuple(goals))
+    parents = {tup : None}
+
+    heur = min_span_tree(start, path_lengths, tuple(goals), goals)
+    mst_node = (heur, 0, tup)
+    priority.put(mst_node)
+
+    # set all current nodes to 0
+    curr = mst_node[2]
+    distances = {curr : 0}
+
+    # priority is not empty
+    while priority :
+        current = priority.get()
+        coordinates = current[2][0]
+
+        length = len(current[2][1]) == 0
+        if (length) :
+            return find_path(current[2], parents)
+
+        neighbors = maze.neighbors(coordinates[0], coordinates[1])
+        for neighbor in neighbors :
+            waypoints = goal_finder(neighbor, current[2][1])
+            dist = (neighbor, tuple(waypoints))
+
+            new_dist = distances[current[2]] + 1
+            # same as part 2
+            if dist in distances :
+                if new_dist >= distances[dist]:
+                    continue
+            
+            parents[dist] = current[2]
+            distances[dist] = new_dist
+            prev_total_cost = current[0]
+
+            heur = min_span_tree(neighbor, path_lengths, tuple(waypoints), goals)
+
+            if prev_total_cost > distances[dist] + heur :
+                curr_total_cost = prev_total_cost
+            else :
+                curr_total_cost = distances[dist] + heur
+
+            node = (curr_total_cost, distances[dist], dist)
+            priority.put(node)
     
 
 def fast(maze):
@@ -235,3 +296,68 @@ def calc_manhattan_distance(start, end) :
     y = abs(start[1] - end[1])
 
     return x + y
+
+def find_path(curr, parents):
+    path = []
+
+    while curr != None :
+        path.append(curr[0])
+        curr = parents[curr]
+
+    path.reverse()
+    return path
+
+def goal_finder(current, goals):
+    path = []
+
+    for goal in goals :
+        if current != goal :
+            path.append(goal)
+
+    return path
+
+def min_span_tree(node, map_tree, goals, goals1):
+    if len(goals) == 0:
+        return 0
+
+    ends = []
+    
+    ret = 0
+    zero_at_goals = goals1.index(goals[0])
+    current = [zero_at_goals]
+    
+    for i in range(1, len(goals)):
+        i_at_goals = goals1.index(goals[i])
+        ends.append(i_at_goals)
+
+    while len(goals) != len(current):
+        least_path = []
+        for curr in current:
+            minimum = sys.maxsize
+            minimum_too = None
+
+            # set the objective
+            for obj in ends:
+                if obj > curr:
+                    edge = (curr, obj)
+                else:
+                    edge = (obj, curr)
+
+                if map_tree[edge] < minimum:
+                    minimum = map_tree[edge]
+                    minimum_too = obj
+
+            least_path.append((minimum, minimum_too))
+
+        probability = min(least_path)
+        ret += probability[0]
+
+        ends.remove(probability[1])
+        current.append(probability[1])
+    result = []
+    for x in goals:
+        heur = calc_manhattan_distance(node, x)
+        result.append(heur)
+    
+    result_1 = ret + min(result)
+    return result_1
