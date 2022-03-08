@@ -132,112 +132,66 @@ def astar_single(maze):
 
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
-    # result = []
-    # start = maze.start
 
-    # g_score={cell:float('inf') for cell in maze.indices}
-    # g_score[start]=0
-    # f_score={cell:float('inf') for cell in maze.indices}
-    # f_score[start]=heuristic(start,(1,1))
-
-    # priority = que.PriorityQueue()
-    # priority.put((heuristic(start, (1,1)), heuristic(start, (1,1)), start))
-
-    # path = {}
-
-    # while not priority.empty() :
-    #     curr = priority.get()[2]
-
-    #     if curr == (1,1) :
-    #         break
-
-    #     for 
     start = maze.start
+    goal = maze.waypoints[0]
 
-    priority = que.PriorityQueue()
-    visited = {}
+    # lists
     parents = {}
-    visited[start] = True
-    goals = maze.waypoints
+    priority = [start]
+    visited = []
 
-    start_pos = (heuristic(start, goals), start)
-    priority.put(start_pos)
+    # f(n) and g(n)
+    start_to_curr = {}
+    total_cost = {}
+    
+    # initialize
+    start_to_curr[start] = 0
+    total_cost[start] = calc_manhattan_distance(start, goal)
 
+    # go through priority queue until it's empty
     while priority :
-        set_start = priority.get()
+        curr = None
+        tmp = 0
+
+        for node in priority :
+            if total_cost[node] < tmp or curr is None  :
+                tmp = total_cost[node]
+                curr = node
         
-        if set_start[1] in goals:
-            goal = set_start[1]
-            return find_path(start, goal, parents)
-        
-        curr = set_start[1]
+        if curr == goal :
+            path = [curr]
+
+            while curr in parents :
+                curr = parents[curr]
+                path.append(curr)
+
+            path.reverse()
+            return path
+
+        visited.append(curr)
+        priority.remove(curr)
+
         neighbors = maze.neighbors(curr[0], curr[1])
+        for neighbor in neighbors :
+            if maze.navigable(neighbor[0], neighbor[1]) :
 
-        for neighbor in neighbors:
-            parents[neighbor] = curr
-            heur = heuristic(neighbor, goals)
-            start_to_node = len(find_path(start, curr, parents))
+                # don't look if already visited
+                if neighbor in visited :
+                    continue
 
-            if (neighbor not in visited) and (maze.navigable(neighbor[0], neighbor[1])):
-                # parents[neighbor] = curr
-                # heur = heuristic(neighbor, goals)
-                # start_to_node = len(find_path(start, curr, parents))
+                possible = start_to_curr[curr] + calc_manhattan_distance(curr, neighbor)
 
-                # trying to figure outt he order of the priority queue
-                new_node = ((heur + start_to_node), neighbor)
-                priority.put(new_node)
-                visited[neighbor] = True
-
-    # return find_path(start, goals, parents)
-
-
-    # result = []
-    
-    # start = maze.start #get starting point
-    # #set_start = start
-    # priority = que.PriorityQueue()
-    # goals = maze.waypoints
-
-    # parent = {}
-    # visited = {}
-    # visited[start] = True
-    
-    # start_position = (heuristic(start, goals), start)
-    # priority.put(start_position)
-
-    # #search
-    # while priority :
-    #     curr = priority.get()
-    #     position = curr[1]
-        
-    #     #curr[1] = position
-    #     if position in goals :
-    #         result = [position]
-
-    #         while result[-1] != start :
-    #             adult = parent[result[-1]]
-    #             result.append(adult)
-    #         return result.reverse()
-        
-    #     neighbors = maze.neighbors(position[0], position[1])
-
-    #     for neighbor in neighbors :
-    #         if neighbor not in visited :
-    #             parent[neighbor] = position
-    #             path = find_path(start, position, parent)
-    #             manhat = heuristic(neighbor, goals)
-    #             length = len(path)
-
-    #             # while path[-1] != start :
-    #             #     adult = parent[path[-1]]
-    #             #     path.append(adult)
+                if neighbor not in priority :
+                    priority.append(neighbor)
                 
-    #             # path.reverse()
-                
-    #             node = ((manhat + length), neighbor)
+                parents[neighbor] = curr
+                start_to_curr[neighbor] = possible
+                heuristic = calc_manhattan_distance(neighbor, goal)
 
-    #             priority.put(node)
-    #             visited[neighbor] = True
+                total_cost[neighbor] = start_to_curr[neighbor] + heuristic
+
+    
 
 
 
@@ -251,76 +205,7 @@ def astar_multiple(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     return []
-    # ways = []
-    # priority = que.PriorityQueue()
-    # start = maze.start
-    # goals = maze.waypoints
-    # lengths = {}
-
-    # for x in range(len(goals)):
-    #     for y in range(x+1, len(goals)):
-    #         ways.append((x, y))
-
     
-    # for direction in ways:
-    #     copy_of_maze = deepcopy(maze)
-
-    #     single_goal_x = goals[direction[0]]
-    #     # somehow set a new start here
-    #     copy_of_maze.start = single_goal_x
-
-    #     single_goal_y = goals[direction[1]]
-    #     # somehow set a new goals here
-    #     copy_of_maze.waypoints = [single_goal_y]
-
-    #     astar = astar_single(copy_of_maze)
-
-    #     distance = len(astar)
-    #     lengths[direction] = distance - 1
-
-    # # parents
-    # parent_node = (start, tuple(goals))
-    # parents = {parent_node : None}
-
-    # # the priority queue gets (f, distance to current node(g), (current node, remaing goals))
-    # heur = spanning_tree(start, tuple(goals), lengths, goals)
-    # curr = (heur, 0, parent_node)
-    # priority.put(curr)
-
-    # priority_distances = {curr[2]:0}
-
-    # while priority:
-    #     priority_curr = priority.get()
-    #     priority_position = priority_curr[2][0]
-
-    #     if (len(priority_curr[2][1]) == 0) :
-    #         return find_path(priority_curr[2], parents)
-
-    #     neighbors = maze.neighbors(priority_position[0], priority_position[1])
-    #     for neighbor in neighbors :
-    #         goals_left = goals_left(neighbor, priority_curr[2][1])
-    #         goals_at_curr = tuple(goals_left)
-    #         dist = (neighbor, goals_at_curr)
-
-    #         if dist in priority_distances :
-    #             additional_dist = priority_distances[priority_curr[2]] + 1
-    #             if additional_dist >= priority_distances[dist]:
-    #                 continue
-
-    #         #update distance
-    #         priority_distances[dist] = priority_distances[priority_curr[2]]+1
-
-    #         #update parent
-    #         parents[dist] = priority_curr[2]
-
-    #         #update priority
-    #         prev = priority_curr[0]
-    #         heurist = spanning_tree(neighbor, goals_at_curr, lengths, goals)
-    #         next = priority_distances[dist] + heurist
-    #         next = max(prev, next)
-
-    #         new_node = (next, priority_distances[dist], dist)
-    #         priority.put(new_node)
 
 def fast(maze):
     """
@@ -333,95 +218,20 @@ def fast(maze):
     return []
 
 # Helpers
-def find_path(start, end, parent) :
-    # result = []
-    # result.append(end)
-    # after = end
 
-    # while after != start : 
-    #     result.append(parent[after])
-    #     after = result[after]
+# def heuristic(position, goals) :
+#     heur = 99999999999
 
-    # return result[::-1]
-    path = [end]
-    # path.append(end)
+#     for goal in goals :
+#         manhattan = calc_manhattan_distance(position, goal)
 
-    while start != path[-1] :
-        adult = parent[path[-1]]
-        path.append(adult)
-
-    path.reverse
-
-    return path
-
-def heuristic(position, goals) :
-    heur = 99999999999
-
-    for goal in goals :
-        manhattan = calc_manhattan_distance(position, goal)
-
-        #might be heur = (heur, manhattan)[manhattan < heur]
-        heur = (manhattan, heur)[manhattan < heur]
+#         #might be heur = (heur, manhattan)[manhattan < heur]
+#         heur = (manhattan, heur)[manhattan < heur]
     
-    return heur
+#     return heur
 
 def calc_manhattan_distance(start, end) :
     x = abs(start[0] - end[0])
     y = abs(start[1] - end[1])
 
     return x + y
-
-# change these
-# def spanning_tree(node, goals, map_, goal):
-#     if len(goals) == 0:
-#         return 0
-
-    
-#     curr = [goal.index(goals[0])]
-#     points = []
-#     array = []
-#     result = 0
-
-#     for i in range(1, len(goals)):
-#         g = goal.index(goals[i])
-#         points.append(g)
-
-#     while len(goals) != len(curr):
-#         mins = []
-
-#         for c in curr:
-#             minimum = sys.maxsize
-#             minimum_1 = None
-
-#             for end in points:
-#                 if c > end:
-#                     edge = (end, c)
-#                 else:
-#                     edge = (c, end)
-
-#                 if minimum > map_[edge]:
-#                     minimum = map_[edge]
-#                     minimum_1 = end
-
-#             mins.append((minimum, minimum_1))
-
-#         smallest_point = min(mins)
-#         points.remove(smallest_point[1])
-
-#         result += smallest_point[0]
-#         curr.append(smallest_point[1])
-
-#     for indiv_goal in goals:
-#         array.append(heuristic(node, indiv_goal))
-    
-#     res = result + min(array)
-#     return res
-
-# def goals_left(node, goals):
-#     result = []
-
-#     for goal in goals:
-#         if node != goal:
-#             result.append(goal)
-            
-#     return result
