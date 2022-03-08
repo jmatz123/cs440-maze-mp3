@@ -354,9 +354,12 @@ def min_span_tree(node, map_tree, goals, goals1):
 
         ends.remove(probability[1])
         current.append(probability[1])
+    
+    # new list for the path
     result = []
-    for x in goals:
-        heur = calc_manhattan_distance(node, x)
+
+    for goal in goals:
+        heur = calc_manhattan_distance(node, goal)
         result.append(heur)
     
     result_1 = ret + min(result)
